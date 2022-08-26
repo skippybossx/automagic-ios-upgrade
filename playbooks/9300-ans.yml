@@ -1,0 +1,126 @@
+---
+# firmware upgrade by skippyboss
+
+# making backup folder
+
+- hosts: localhost
+
+  tasks:
+   - name: Get ansible date/time facts
+     setup:
+       filter: "ansible_date_time"
+       gather_subset: "!all"
+
+   - name: Store DTG as fact
+     set_fact:
+       DTG: "{{ ansible_date_time.date }}"
+
+   - name: Create Directory {{hostvars.localhost.DTG}}
+     file:
+      path: /etc/ansible/automagic-ios-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}
+      state: directory
+  run_once: true
+
+# backup run conf 
+
+- hosts: 9300-ans
+
+  tasks:
+   - name: Backup Running Config
+     ios_command:
+       commands: show run
+     register: config
+
+   - name: Save output to /etc/ansible/automagic-ios-upgrade/playbooks/backups/
+     copy:
+       content: "{{config.stdout[0]}}"
+       dest: "/etc/ansible/automagic-ios-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}/{{ inventory_hostname }}-{{hostvars.localhost.DTG}}-config.txt"
+
+
+# check version
+
+- name: upgrade firmware cisco ios
+  hosts: 9300-ans
+
+
+  vars_files:
+  - /etc/ansible/automagic-ios-upgrade/fw_upgrade.yml
+
+
+
+  tasks:
+    - name: CHECK CURRENT VERSION
+      ios_facts:
+
+    - debug:
+        msg:
+        - "Current version is {{ ansible_net_version }}"
+        - "Upgrade image is {{ ios_9300_version }}"
+
+    - debug:
+        msg:
+        - "Firmware will be upgraded to the latest version"
+
+      when: ansible_net_version != ios_9300_version
+
+    - name: END PLAY FOR HOST
+
+      meta: end_host
+
+      when: ansible_net_version == ios_9300_version
+
+# install remove inactive
+
+    - name: Running the software clean command
+      ios_command:
+        commands:
+          - command: 'install remove inactive'
+            prompt: 'Do you want to remove the above files?'
+            answer: 'y'
+      vars:
+        ansible_command_timeout: 300
+
+# copy firmware to switch 
+    - name: enable scp
+      ios_config:
+        commands:
+          - "ip scp server enable"
+        save_when: never
+    - name: Copying bin file. This may take a while...
+      net_put:
+        src: "/etc/ansible/automagic-ios-upgrade/playbooks/firmware/{{ios_9300_file}}"
+        dest: "flash:{{ios_9300_file}}"
+      vars:
+        ansible_command_timeout: 7200
+
+# change boot 
+
+    - name: Change Boot Variable to new image
+      ios_config:
+        commands:
+          - "boot system flash:{{ios_9300_file}}"
+        save_when: always
+      vars:
+        ansible_command_timeout: 120
+
+# saving with new boot variable
+
+    - name: Save running config
+      ios_config:
+        save_when: always
+      vars:
+        ansible_command_timeout: 120
+
+
+
+# reload 
+    - name: Reload the Device 
+      cli_command: 
+        command: reload
+        prompt: 
+          - confirm
+        answer: 
+          - 'y'
+    - debug: 
+        msg: 
+        - "Switch upgrade successfull and the switch is reloading. You can close this window."
