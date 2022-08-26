@@ -17,7 +17,7 @@
 
    - name: Create Directory {{hostvars.localhost.DTG}}
      file:
-      path: /etc/ansible/automagic-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}
+      path: /etc/ansible/automagic-ios-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}
       state: directory
   run_once: true
 
@@ -31,16 +31,11 @@
        commands: show run
      register: config
 
-   - name: Save output to /etc/ansible/automagic-upgrade/playbooks/backups/
+   - name: Save output to /etc/ansible/automagic-ios-upgrade/playbooks/backups/
      copy:
        content: "{{config.stdout[0]}}"
-       dest: "/etc/ansible/automagic-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}/{{ inventory_hostname }}-{{hostvars.localhost.DTG}}-config.txt"
+       dest: "/etc/ansible/automagic-ios-upgrade/playbooks/backups/{{hostvars.localhost.DTG}}/{{ inventory_hostname }}-{{hostvars.localhost.DTG}}-config.txt"
 
-# save run conf
-
-#   - name: Save running config
-#     ios_config:
-#       save_when: always
 
 # check version
 
@@ -49,7 +44,7 @@
 
 
   vars_files:
-  - /etc/ansible/automagic-upgrade/fw_upgrade.yml
+  - /etc/ansible/automagic-ios-upgrade/fw_upgrade.yml
 
 
 
@@ -93,7 +88,7 @@
         save_when: never
     - name: Copying bin file. This may take a while...
       net_put:
-        src: "/etc/ansible/automagic-upgrade/playbooks/firmware/{{ios_9200_file}}"
+        src: "/etc/ansible/automagic-ios-upgrade/playbooks/firmware/{{ios_9200_file}}"
         dest: "flash:{{ios_9200_file}}"
       vars:
         ansible_command_timeout: 3600
@@ -112,7 +107,7 @@
       ios_config:
         save_when: always
       vars:
-        ansible_command_timeout: 120
+        ansible_command_timeout: 180
 
 # reload 
     - name: Reload the Device 
