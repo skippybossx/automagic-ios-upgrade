@@ -1,0 +1,17 @@
+[9200-ans]
+switch_hostname
+
+[9200-ans:vars]
+ansible_user=your_username
+ansible_password=your_password
+ansible_connection=network_cli
+ansible_network_os=ios
+
+[9300-ans]
+switch_hostname
+
+[9300-ans:vars]
+ansible_user=your_username
+ansible_password=your_password
+ansible_connection=network_cli
+ansible_network_os=ios
