@@ -32,16 +32,18 @@
         dest: "flash:{{ios_3560_file}}"
       vars:
         ansible_command_timeout: 3600
+
 # copy firmware to switch http optional
-    - name: copy firmware to switch 
-      block:
-      - name: Copying bin file. This may take a while...
-        ios_command:
-           commands:
-              - command: "copy http://your_server_ip/{{ios_3560_file}} flash:"
-        vars:
-          ansible_command_timeout: 3600
-# change boot 
+#    - name: copy firmware to switch 
+#      block:
+#      - name: Copying bin file. This may take a while...
+#        ios_command:
+#           commands:
+#              - command: "copy http://your_server_ip/{{ios_3560_file}} flash:"
+#        vars:
+#          ansible_command_timeout: 3600
+
+# change boot variable
     - name: Change Boot Variable to new image
       ios_config:
         commands:
