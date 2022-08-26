@@ -1,6 +1,6 @@
 # AUT
 <p align="center">
-  <img src="https:///automagic-upgrade.png">
+  <img src="https://github.com/skippybossx/automagic-ios-upgrade/raw/main/automagic-ios-upgrade.png">
 </p>
 
 # `automagic-upgrade`
